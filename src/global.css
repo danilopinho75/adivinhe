@@ -12,7 +12,11 @@
 body {
   background-color: var(--background-color);
   font-family: "Noto Sans", sans-serif;
-  font-optical-sizing: auto;
+}
+
+input {
+  font-family: "Noto Sans", sans-serif;
+  outline: none;
 }
 
 button {
