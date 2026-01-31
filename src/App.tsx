@@ -3,6 +3,7 @@ import styles from "./app.module.css";
 import { Header } from "./components/Header";
 import { Letter } from "./components/Letter";
 import { Tip } from "./components/Tip";
+import { Input } from "./components/Input";
 
 export default function App() {
 
@@ -23,6 +24,11 @@ export default function App() {
           <Letter value="c" />
           <Letter value="t" />
         </div>
+
+        <h4>Palpite</h4>
+
+        <Input placeholder="?" maxLength={1} autoFocus />
+
       </main>
     </div>
   );
