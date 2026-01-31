@@ -4,6 +4,7 @@ import { Header } from "./components/Header";
 import { Letter } from "./components/Letter";
 import { Tip } from "./components/Tip";
 import { Input } from "./components/Input";
+import { Button } from "./components/Button";
 
 export default function App() {
 
@@ -27,7 +28,10 @@ export default function App() {
 
         <h4>Palpite</h4>
 
-        <Input placeholder="?" maxLength={1} autoFocus />
+        <div className={styles.guess}>
+          <Input placeholder="?" maxLength={1} autoFocus />
+          <Button title="Confirmar" />
+        </div>
 
       </main>
     </div>
