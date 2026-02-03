@@ -1,40 +1,140 @@
 import styles from "./app.module.css";
 
+import { useEffect, useState } from "react";
+
+import { WORDS } from "./utils/words";
+import type { Challenge } from "./utils/words"
+
 import { Header } from "./components/Header";
 import { Letter } from "./components/Letter";
 import { Tip } from "./components/Tip";
 import { Input } from "./components/Input";
 import { Button } from "./components/Button";
 import { LettersUsed } from "./components/LettersUsed";
+import type { LettersUsedProps } from "./components/LettersUsed";
+
+const ATTEMPTS_MARGIN = 5;
 
 export default function App() {
+  const [score, setScore] = useState(0);
+  const [letter, setLetter] = useState("");
+  const [lettersUsed, setLettersUsed] = useState<LettersUsedProps[]>([]);
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
 
   function handleRestartGame() {
-    alert("Reiniciar o jogo!");
+    const isConfirmed = window.confirm("Tem certeza que deseja reiniciar o jogo?");
+
+    if (isConfirmed) {
+      startGame();
+    }
+  }
+
+  function startGame() {
+    const index = Math.floor(Math.random() * WORDS.length);
+    const randomWord = WORDS[index];
+    setChallenge(randomWord);
+
+    setScore(0);
+    setLetter("");
+    setLettersUsed([]);
+  }
+
+  function handleConfirm() {
+    if (!challenge) {
+      return;
+    }
+
+    if (!letter.trim()) {
+      return alert("Digite uma letra!");
+    }
+
+    const value = letter.toUpperCase();
+    const exists = lettersUsed.find((used) => used.value.toUpperCase() === value);
+
+    if(exists) {
+      setLetter("");
+      return alert("Você já usou a letra " + value);
+    }
+
+    const hits = challenge.word.toUpperCase().split("").filter((char) => char === value).length;
+
+    const correct = hits > 0;
+    const currentScore = score + hits;
+
+    setLettersUsed((prevState) => [
+      ...prevState,
+      {
+        value,
+        correct: false
+      }
+    ])
+    setScore(currentScore);
+    setLetter("");
+  }
+
+  function endGame(message: string) {
+    alert(message);
+    startGame();
+  }
+
+  useEffect( () => {
+    startGame();
+  }, []);
+
+  useEffect(() => {
+    if(!challenge) {
+      return;
+    }
+
+    setTimeout(() => {
+      if(score === challenge.word.length) {
+        return endGame(`Parabéns! Você descobriu a palavra ${challenge.word}.`);
+      }
+
+      const attemptLimit = challenge.word.length + ATTEMPTS_MARGIN;
+      if (lettersUsed.length === attemptLimit) {
+        return endGame("Que pena! Suas tentativas acabaram.");
+      }
+    }, 200)
+  }, [score, lettersUsed.length]);
+
+  if (!challenge) {
+    return;
   }
 
   return (
     <div className={styles.container}>
       <main>
-        <Header current={5} max={10} onRestart={handleRestartGame} />
-        <Tip tip="Essa é uma dica legal!" />
+        <Header 
+          current={lettersUsed.length} 
+          max={challenge.word.length + ATTEMPTS_MARGIN} 
+          onRestart={handleRestartGame} 
+        />
+        <Tip tip={challenge.tip} />
 
         <div className={styles.word}>
-          <Letter value="R" />
-          <Letter value="e" />
-          <Letter value="a" />
-          <Letter value="c" />
-          <Letter value="t" />
+          {
+            challenge.word.split("").map((letter, index) => {
+              const letterUsed = lettersUsed.find((used) => used.value.toUpperCase() === letter.toUpperCase());
+              return <Letter key={index} value={letterUsed?.value} color={letterUsed?.correct ? "correct" : "default"} />
+          })}
         </div>
 
         <h4>Palpite</h4>
 
         <div className={styles.guess}>
-          <Input placeholder="?" maxLength={1} autoFocus />
-          <Button title="Confirmar" />
+          <Input 
+            placeholder="?"
+            maxLength={1}
+            autoFocus
+            value={letter}
+            onChange={(e) => setLetter(e.target.value)} 
+            onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
+          />
+          <Button title="Confirmar" onClick={handleConfirm} />
         </div>
 
-        <LettersUsed />
+        <LettersUsed data={lettersUsed} />
 
       </main>
     </div>
